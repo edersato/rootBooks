@@ -2,34 +2,58 @@
   <div>
     <div class="d-flex justify-content-between px-3">
       <h1>Clientes</h1>
-      <button class="btn btn-success" @click="openModal">Novo Cliente</button>
-
+      <button class="btn btn-success" @click="openAddModal">Novo Cliente</button>
     </div>
     <div class="row">
-      <div class="col-md-4" v-for="client in clients" :key="client.id">
-        <Card :idNumber="client.id" :name="client.name" :city="client.city" @edit="editClient" @remove="removeClient" />
+      <div class="col-md-4" v-for="client in clients" :key="client.idCliente">
+        <Card :idNumber="client.idCliente" :name="client.nmCliente" :city="client.cidade" @edit="openEditModal(client)" @remove="removeClient(client)" />
       </div>
     </div>
 
-    <!-- Modal -->
-    <div class="modal fade" id="clientModal" tabindex="-1" aria-labelledby="clientModalLabel" aria-hidden="true">
+    <!-- Add Client Modal -->
+    <div class="modal fade" id="addClientModal" tabindex="-1" aria-labelledby="addClientModalLabel" aria-hidden="true">
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="clientModalLabel">{{ isEditing ? 'Edit Client' : 'Add Client' }}</h5>
+            <h5 class="modal-title" id="addClientModalLabel">Novo Cliente</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
-            <form @submit.prevent="saveClient">
+            <form @submit.prevent="saveNewClient">
               <div class="mb-3">
-                <label for="clientName" class="form-label">Name</label>
-                <input type="text" class="form-control" id="clientName" v-model="clientForm.name" required>
+                <label for="newClientName" class="form-label">Nome</label>
+                <input type="text" class="form-control" id="newClientName" v-model="newClientForm.nmCliente" required>
               </div>
               <div class="mb-3">
-                <label for="clientCity" class="form-label">City</label>
-                <input type="text" class="form-control" id="clientCity" v-model="clientForm.city" required>
+                <label for="newClientCity" class="form-label">Cidade</label>
+                <input type="text" class="form-control" id="newClientCity" v-model="newClientForm.cidade" required>
               </div>
-              <button type="submit" class="btn btn-primary">{{ isEditing ? 'Update' : 'Add' }}</button>
+              <button type="submit" class="btn btn-success">Adicionar</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Client Modal -->
+    <div class="modal fade" id="editClientModal" tabindex="-1" aria-labelledby="editClientModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="editClientModalLabel">Atualizar Cliente</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form @submit.prevent="saveEditedClient">
+              <div class="mb-3">
+                <label for="editClientName" class="form-label">Nome</label>
+                <input type="text" class="form-control" id="editClientName" v-model="editClientForm.nmCliente" required>
+              </div>
+              <div class="mb-3">
+                <label for="editClientCity" class="form-label">Cidade</label>
+                <input type="text" class="form-control" id="editClientCity" v-model="editClientForm.cidade" required>
+              </div>
+              <button type="submit" class="btn btn-primary">Atualizar</button>
             </form>
           </div>
         </div>
@@ -49,17 +73,20 @@ export default {
   data() {
     return {
       clients: [],
-      clientForm: {
-        id: null,
-        name: '',
-        city: ''
+      newClientForm: {
+        nmCliente: '',
+        cidade: ''
       },
-      isEditing: false
+      editClientForm: {
+        idCliente: null,
+        nmCliente: '',
+        cidade: ''
+      }
     };
   },
   methods: {
     fetchClients() {
-      api.get('/clientes')
+      api.get('api/Clientes')
         .then(response => {
           console.log('API response:', response.data);
           this.clients = response.data;
@@ -68,44 +95,44 @@ export default {
           console.error(error);
         });
     },
-    openModal(client = null) {
-      if (client) {
-        this.clientForm = { ...client };
-        this.isEditing = true;
-      } else {
-        this.clientForm = { id: null, name: '', city: '' };
-        this.isEditing = false;
-      }
-      new bootstrap.Modal(document.getElementById('clientModal')).show();
+    openAddModal() {
+      this.newClientForm = { nmCliente: '', cidade: '' };
+      new bootstrap.Modal(document.getElementById('addClientModal')).show();
     },
-    saveClient() {
-      if (this.isEditing) {
-        api.put(`/clientes/${this.clientForm.id}`, this.clientForm)
-          .then(() => {
-            this.fetchClients();
-            bootstrap.Modal.getInstance(document.getElementById('clientModal')).hide();
-          })
-          .catch(error => {
-            console.error(error);
-          });
-      } else {
-        api.post('/clientes', this.clientForm)
-          .then(() => {
-            this.fetchClients();
-            bootstrap.Modal.getInstance(document.getElementById('clientModal')).hide();
-          })
-          .catch(error => {
-            console.error(error);
-          });
-      }
+    openEditModal(client) {
+      this.editClientForm = { ...client };
+      new bootstrap.Modal(document.getElementById('editClientModal')).show();
     },
-    editClient(client) {
-      this.openModal(client);
+    saveNewClient() {
+      api.post('api/Clientes', this.newClientForm)
+        .then(response => {
+          this.clients.push(response.data);
+          bootstrap.Modal.getInstance(document.getElementById('addClientModal')).hide();
+        })
+        .catch(error => {
+          console.error(error);
+        });
+    },
+    saveEditedClient() {
+      api.put(`api/Clientes/${this.editClientForm.idCliente}`, this.editClientForm)
+        .then(response => {
+          const index = this.clients.findIndex(client => client.idCliente === this.editClientForm.idCliente);
+          if (index !== -1) {
+            this.clients.splice(index, 1, response.data);
+          }
+          bootstrap.Modal.getInstance(document.getElementById('editClientModal')).hide();
+        })
+        .catch(error => {
+          console.error(error);
+        });
     },
     removeClient(client) {
-      api.delete(`/clientes/${client.id}`)
+      api.delete(`api/Clientes/${client.idCliente}`)
         .then(() => {
-          this.fetchClients();
+          const index = this.clients.findIndex(c => c.idCliente === client.idCliente);
+          if (index !== -1) {
+            this.clients.splice(index, 1);
+          }
         })
         .catch(error => {
           console.error(error);

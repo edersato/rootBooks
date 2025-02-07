@@ -2,7 +2,7 @@
   <div>
     <div class="d-flex justify-content-between px-3">
       <h1>Produtos</h1>
-      <button class="btn btn-success mb-3" @click="openModal">Adicionar Produto</button>
+      <button class="btn btn-success mb-3" @click="openAddModal">Adicionar Produto</button>
     </div>
     <div class="mb-3">
       <input type="text" class="form-control" placeholder="Pesquisar pela Descrição do Produto" v-model="searchQuery" @input="fetchProdutos">
@@ -15,7 +15,7 @@
             <p class="card-text">ID: {{ produto.idProduto }}</p>
             <p class="card-text">Valor Unitário: {{ produto.vlrUnitario }}</p>
             <div class="d-flex justify-content-between pl-3">
-              <button class="btn btn-primary" @click="openModal(produto)">Editar</button>
+              <button class="btn btn-primary" @click="openEditModal(produto)">Editar</button>
               <button class="btn btn-danger" @click="confirmDelete(produto)">Excluir</button>
             </div>
           </div>
@@ -23,12 +23,12 @@
       </div>
     </div>
 
-    <!-- Modal -->
-    <div class="modal fade" id="produtoModal" tabindex="-1" aria-labelledby="produtoModalLabel" aria-hidden="true">
+    <!-- Add Product Modal -->
+    <div class="modal fade" id="addProdutoModal" tabindex="-1" aria-labelledby="addProdutoModalLabel" aria-hidden="true">
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="produtoModalLabel">{{ isEditing ? 'Editar Produto' : 'Adicionar Produto' }}</h5>
+            <h5 class="modal-title" id="addProdutoModalLabel">Adicionar Produto</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
@@ -41,7 +41,32 @@
                 <label for="vlrUnitario" class="form-label">Valor Unitário</label>
                 <input type="number" step="0.01" class="form-control" id="vlrUnitario" v-model="produtoForm.vlrUnitario" required>
               </div>
-              <button type="submit" class="btn btn-primary">{{ isEditing ? 'Atualizar' : 'Adicionar' }}</button>
+              <button type="submit" class="btn btn-primary">Adicionar</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Product Modal -->
+    <div class="modal fade" id="editProdutoModal" tabindex="-1" aria-labelledby="editProdutoModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="editProdutoModalLabel">Editar Produto</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form @submit.prevent="updateProduto">
+              <div class="mb-3">
+                <label for="dscProduto" class="form-label">Descrição</label>
+                <input type="text" class="form-control" id="dscProduto" v-model="produtoForm.dscProduto" required>
+              </div>
+              <div class="mb-3">
+                <label for="vlrUnitario" class="form-label">Valor Unitário</label>
+                <input type="number" step="0.01" class="form-control" id="vlrUnitario" v-model="produtoForm.vlrUnitario" required>
+              </div>
+              <button type="submit" class="btn btn-primary">Atualizar</button>
             </form>
           </div>
         </div>
@@ -95,60 +120,46 @@ export default {
   },
   methods: {
     fetchProdutos() {
-      api.get('/produtos', { params: { search: this.searchQuery } })
+      api.get('api/Produtos', { params: { search: this.searchQuery } })
         .then(response => {
           console.log(response.data);
-          
           this.produtos = response.data;
         })
         .catch(error => {
           console.error(error);
         });
     },
-    openModal(produto = null) {
-      if (produto) {
-        this.produtoForm = { ...produto };
-        this.isEditing = true;
-      } else {
-        this.produtoForm = { idProduto: null, dscProduto: '', vlrUnitario: 0 };
-        this.isEditing = false;
-      }
-      new bootstrap.Modal(document.getElementById('produtoModal')).show();
+    openAddModal() {
+      this.produtoForm = { idProduto: null, dscProduto: '', vlrUnitario: 0 };
+      new bootstrap.Modal(document.getElementById('addProdutoModal')).show();
+    },
+    openEditModal(produto) {
+      this.produtoForm = { ...produto };
+      this.isEditing = true;
+      new bootstrap.Modal(document.getElementById('editProdutoModal')).show();
     },
     saveProduto() {
-      if (this.isEditing) {
-        api.put(`/produtos/${this.produtoForm.idProduto}`, this.produtoForm)
-          .then(() => {
-            this.fetchProdutos();
-            bootstrap.Modal.getInstance(document.getElementById('produtoModal')).hide();
-          })
-          .catch(error => {
-            console.error(error);
-          });
-      } else {
-        api.post('/produtos', this.produtoForm)
-          .then(() => {
-            this.fetchProdutos();
-            bootstrap.Modal.getInstance(document.getElementById('produtoModal')).hide();
-          })
-          .catch(error => {
-            console.error(error);
-          });
+      const newProduto = { ...this.produtoForm, idProduto: Date.now() };
+      this.produtos.push(newProduto);
+      bootstrap.Modal.getInstance(document.getElementById('addProdutoModal')).hide();
+    },
+    updateProduto() {
+      const index = this.produtos.findIndex(produto => produto.idProduto === this.produtoForm.idProduto);
+      if (index !== -1) {
+        this.produtos.splice(index, 1, this.produtoForm);
       }
+      bootstrap.Modal.getInstance(document.getElementById('editProdutoModal')).hide();
     },
     confirmDelete(produto) {
       this.produtoToDelete = produto;
       new bootstrap.Modal(document.getElementById('deleteModal')).show();
     },
     deleteProduto() {
-      api.delete(`/produtos/${this.produtoToDelete.idProduto}`)
-        .then(() => {
-          this.fetchProdutos();
-          bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
-        })
-        .catch(error => {
-          console.error(error);
-        });
+      const index = this.produtos.findIndex(produto => produto.idProduto === this.produtoToDelete.idProduto);
+      if (index !== -1) {
+        this.produtos.splice(index, 1);
+      }
+      bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
     }
   },
   mounted() {
