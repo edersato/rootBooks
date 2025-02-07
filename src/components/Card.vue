@@ -6,8 +6,8 @@
       <p class="card-text"><strong>Nome:</strong> {{ name }}</p>
       <p class="card-text"><strong>Cidade:</strong> {{ city }}</p>
 
-      <div>
-        <button class="btn btn-info" @click="$emit('edit', { id: idNumber, name, city })">Editar</button>
+      <div class="d-flex justify-content-between">
+        <button class="btn btn-primary" @click="$emit('edit', { id: idNumber, name, city })">Editar</button>
         <button class="btn btn-danger" @click="$emit('remove', { id: idNumber })">Remover</button>
       </div>
     </div>
@@ -19,7 +19,7 @@ export default {
   name: 'Card',
   props: {
     idNumber: {
-      type: String,
+      type: Number,
       required: true
     },
     name: {
@@ -30,6 +30,9 @@ export default {
       type: String,
       required: true
     }
+  },
+  mounted() {
+    console.log('Card props:', this.idNumber, this.name, this.city);
   }
 }
 </script>

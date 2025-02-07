@@ -1,7 +1,10 @@
 <template>
   <div>
-    <h1>Clientes</h1>
-    <button class="btn btn-primary" @click="openModal">Add Client</button>
+    <div class="d-flex justify-content-between px-3">
+      <h1>Clientes</h1>
+      <button class="btn btn-success" @click="openModal">Novo Cliente</button>
+
+    </div>
     <div class="row">
       <div class="col-md-4" v-for="client in clients" :key="client.id">
         <Card :idNumber="client.id" :name="client.name" :city="client.city" @edit="editClient" @remove="removeClient" />
@@ -36,7 +39,7 @@
 </template>
 
 <script>
-import axios from 'axios';
+import api from '../services/api'
 import Card from '../components/Card.vue';
 
 export default {
@@ -56,8 +59,9 @@ export default {
   },
   methods: {
     fetchClients() {
-      axios.get('testing')
+      api.get('/clientes')
         .then(response => {
+          console.log('API response:', response.data);
           this.clients = response.data;
         })
         .catch(error => {
@@ -76,7 +80,7 @@ export default {
     },
     saveClient() {
       if (this.isEditing) {
-        axios.put(`testing/${this.clientForm.id}`, this.clientForm)
+        api.put(`/clientes/${this.clientForm.id}`, this.clientForm)
           .then(() => {
             this.fetchClients();
             bootstrap.Modal.getInstance(document.getElementById('clientModal')).hide();
@@ -85,7 +89,7 @@ export default {
             console.error(error);
           });
       } else {
-        axios.post('testing', this.clientForm)
+        api.post('/clientes', this.clientForm)
           .then(() => {
             this.fetchClients();
             bootstrap.Modal.getInstance(document.getElementById('clientModal')).hide();
@@ -99,7 +103,7 @@ export default {
       this.openModal(client);
     },
     removeClient(client) {
-      axios.delete(`testing/${client.id}`)
+      api.delete(`/clientes/${client.id}`)
         .then(() => {
           this.fetchClients();
         })

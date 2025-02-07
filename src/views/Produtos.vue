@@ -1,31 +1,27 @@
 <template>
   <div>
-    <h1>Produtos</h1>
+    <div class="d-flex justify-content-between px-3">
+      <h1>Produtos</h1>
+      <button class="btn btn-success mb-3" @click="openModal">Adicionar Produto</button>
+    </div>
     <div class="mb-3">
       <input type="text" class="form-control" placeholder="Pesquisar pela Descrição do Produto" v-model="searchQuery" @input="fetchProdutos">
     </div>
-    <button class="btn btn-primary mb-3" @click="openModal">Adicionar Produto</button>
-    <table class="table table-striped">
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Descrição</th>
-          <th>Valor Unitário</th>
-          <th>Ações</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="produto in filteredProdutos" :key="produto.idProduto">
-          <td>{{ produto.idProduto }}</td>
-          <td>{{ produto.dscProduto }}</td>
-          <td>{{ produto.vlrUnitario.toFixed(2) }}</td>
-          <td>
-            <button class="btn btn-info btn-sm" @click="openModal(produto)">Editar</button>
-            <button class="btn btn-danger btn-sm" @click="confirmDelete(produto)">Excluir</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="row">
+      <div class="col-md-4 mb-3" v-for="produto in filteredProdutos" :key="produto.idProduto">
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title">{{ produto.dscProduto }}</h5>
+            <p class="card-text">ID: {{ produto.idProduto }}</p>
+            <p class="card-text">Valor Unitário: {{ produto.vlrUnitario }}</p>
+            <div class="d-flex justify-content-between pl-3">
+              <button class="btn btn-primary" @click="openModal(produto)">Editar</button>
+              <button class="btn btn-danger" @click="confirmDelete(produto)">Excluir</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- Modal -->
     <div class="modal fade" id="produtoModal" tabindex="-1" aria-labelledby="produtoModalLabel" aria-hidden="true">
@@ -74,7 +70,7 @@
 </template>
 
 <script>
-import axios from 'axios';
+import api from '../services/api';
 
 export default {
   data() {
@@ -99,8 +95,10 @@ export default {
   },
   methods: {
     fetchProdutos() {
-      axios.get('/api/produtos', { params: { search: this.searchQuery } })
+      api.get('/produtos', { params: { search: this.searchQuery } })
         .then(response => {
+          console.log(response.data);
+          
           this.produtos = response.data;
         })
         .catch(error => {
@@ -119,7 +117,7 @@ export default {
     },
     saveProduto() {
       if (this.isEditing) {
-        axios.put(`/api/produtos/${this.produtoForm.idProduto}`, this.produtoForm)
+        api.put(`/produtos/${this.produtoForm.idProduto}`, this.produtoForm)
           .then(() => {
             this.fetchProdutos();
             bootstrap.Modal.getInstance(document.getElementById('produtoModal')).hide();
@@ -128,7 +126,7 @@ export default {
             console.error(error);
           });
       } else {
-        axios.post('/api/produtos', this.produtoForm)
+        api.post('/produtos', this.produtoForm)
           .then(() => {
             this.fetchProdutos();
             bootstrap.Modal.getInstance(document.getElementById('produtoModal')).hide();
@@ -143,7 +141,7 @@ export default {
       new bootstrap.Modal(document.getElementById('deleteModal')).show();
     },
     deleteProduto() {
-      axios.delete(`/api/produtos/${this.produtoToDelete.idProduto}`)
+      api.delete(`/produtos/${this.produtoToDelete.idProduto}`)
         .then(() => {
           this.fetchProdutos();
           bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();

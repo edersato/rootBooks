@@ -1,0 +1,105 @@
+{
+  "clientes": [
+    {
+      "id": 2,
+      "name": "Eder",
+      "city": "curitiba"
+    },
+    {
+      "id": 3,
+      "name": "João",
+      "city": "Sâo Paulo"
+    },
+    {
+      "id": 4,
+      "name": "Paulo",
+      "city": "Rio de Janeiro"
+    },
+    {
+      "id": 5,
+      "name": "Matheus",
+      "city": "Nova Iguaçu"
+    }
+  ],
+  "produtos": [
+    {
+      "idProduto": 1,
+      "dscProduto": "livro1",
+      "vlrUnitario": "300"
+    },
+    {
+      "idProduto": 2,
+      "dscProduto": "livro2",
+      "vlrUnitario": "150"
+    },
+    {
+      "idProduto": 3,
+      "dscProduto": "livro3",
+      "vlrUnitario": "200"
+    },
+    {
+      "idProduto": 4,
+      "dscProduto": "livro4",
+      "vlrUnitario": "250"
+    },
+    {
+      "idProduto": 5,
+      "dscProduto": "livro5",
+      "vlrUnitario": "100"
+    }
+  ],
+  "vendas": [
+    {
+      "id": 1,
+      "cliente": {
+        "id": 1
+      },
+      "produto": {
+        "idProduto": 1
+      },
+      "qtdVenda": 2,
+      "vlrUnitarioVenda": "300",
+      "dthVenda": "2023-10-01",
+      "vlrTotalVenda": "600"
+    },
+    {
+      "id": 2,
+      "cliente": {
+        "id": 2
+      },
+      "produto": {
+        "idProduto": 2
+      },
+      "qtdVenda": 1,
+      "vlrUnitarioVenda": "150",
+      "dthVenda": "2023-10-02",
+      "vlrTotalVenda": "150"
+    },
+    {
+      "id": 3,
+      "cliente": {
+        "id": 3
+      },
+      "produto": {
+        "idProduto": 3
+      },
+      "qtdVenda": 3,
+      "vlrUnitarioVenda": "200",
+      "dthVenda": "2023-10-03",
+      "vlrTotalVenda": "600"
+    },
+    {
+      "id": 4,
+      "cliente": {
+        "id": 4
+      },
+      "produto": {
+        "idProduto": 4
+      },
+      "qtdVenda": 1,
+      "vlrUnitarioVenda": "250",
+      "dthVenda": "2023-10-04",
+      "vlrTotalVenda": "250"
+    }
+  ]
+}

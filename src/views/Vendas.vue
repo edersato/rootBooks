@@ -20,13 +20,13 @@
       </thead>
       <tbody>
         <tr v-for="venda in filteredVendas" :key="venda.idVenda">
-          <td>{{ venda.idVenda }}</td>
-          <td>{{ venda.clienteNome }}</td>
-          <td>{{ venda.produtoDescricao }}</td>
+          <td>{{ venda.id }}</td>
+          <td>{{ venda.cliente.id }}</td>
+          <td>{{ venda.produto.id }}</td>
           <td>{{ venda.qtdVenda }}</td>
-          <td>{{ venda.vlrUnitarioVenda.toFixed(2) }}</td>
+          <td>{{ venda.vlrUnitarioVenda }}</td>
           <td>{{ new Date(venda.dthVenda).toLocaleString() }}</td>
-          <td>{{ venda.vlrTotalVenda.toFixed(2) }}</td>
+          <td>{{ venda.vlrTotalVenda }}</td>
           <td>
             <button class="btn btn-info btn-sm" @click="openModal(venda)">Editar</button>
             <button class="btn btn-danger btn-sm" @click="confirmDelete(venda)">Excluir</button>
@@ -98,7 +98,7 @@
 </template>
 
 <script>
-import axios from 'axios';
+import api from '../services/api';
 
 export default {
   data() {
@@ -128,8 +128,9 @@ export default {
   },
   methods: {
     fetchVendas() {
-      axios.get('/api/vendas', { params: { search: this.searchQuery } })
+      api.get('/vendas', { params: { search: this.searchQuery } })
         .then(response => {
+          console.log(response.data);
           this.vendas = response.data;
         })
         .catch(error => {
@@ -148,7 +149,7 @@ export default {
     },
     saveVenda() {
       if (this.isEditing) {
-        axios.put(`/api/vendas/${this.vendaForm.idVenda}`, this.vendaForm)
+        api.put(`/vendas/${this.vendaForm.idVenda}`, this.vendaForm)
           .then(() => {
             this.fetchVendas();
             bootstrap.Modal.getInstance(document.getElementById('vendaModal')).hide();
@@ -157,7 +158,7 @@ export default {
             console.error(error);
           });
       } else {
-        axios.post('/api/vendas', this.vendaForm)
+        api.post('/vendas', this.vendaForm)
           .then(() => {
             this.fetchVendas();
             bootstrap.Modal.getInstance(document.getElementById('vendaModal')).hide();
@@ -172,7 +173,7 @@ export default {
       new bootstrap.Modal(document.getElementById('deleteModal')).show();
     },
     deleteVenda() {
-      axios.delete(`/api/vendas/${this.vendaToDelete.idVenda}`)
+      api.delete(`/vendas/${this.vendaToDelete.idVenda}`)
         .then(() => {
           this.fetchVendas();
           bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
